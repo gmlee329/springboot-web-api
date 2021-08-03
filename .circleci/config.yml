@@ -3,6 +3,8 @@ version: 2.1
 parameters:
   package-name:
     description: spring boot application package name
+    type: string
+    default: "demo3"
   package-version:
     description: spring boot application package version
     type: string
