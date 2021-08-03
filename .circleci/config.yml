@@ -103,7 +103,8 @@ jobs:
             echo "PACKAGE_VERSION : ${PACKAGE_VERSION}"
             echo "FROM_REPOSITORY : ${FROM_REPOSITORY}"
             echo "TO_REPOSITORY : ${TO_REPOSITORY}"
-            ls -al ./target | grep ${PACKAGE_NAME}-${PACKAGE_VERSION}.jar
+            pwd
+            ls -al
       - aws-s3/sync:
           arguments: |
             --exclude "*" \
