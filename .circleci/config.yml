@@ -14,21 +14,9 @@ parameters:
   to-repository:
     description: A local target or s3 destination
     type: string
-    default: ""
+    default: "s3://spring-boot-repository/target/"
 
-  aws-access-key-id:
-    default: AWS_ACCESS_KEY_ID
-    description: aws access key id override
-    type: env_var_name
-  aws-region:
-    default: AWS_REGION
-    description: aws region override
-    type: env_var_name
-  aws-secret-access-key:
-    default: AWS_SECRET_ACCESS_KEY
-    description: aws secret access key override
-    type: env_var_name
-
+# s3 사용을 위한 orbs
 orbs:
   aws-s3: circleci/aws-s3@3.0.0
 
