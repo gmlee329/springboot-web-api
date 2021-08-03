@@ -95,7 +95,7 @@ jobs:
       TO_REPOSITORY: << pipeline.parameters.to-repository >>
     steps:
       - attach_workspace:
-          at: ./target
+          at: .
       - run:
           name: check environments
           command: |
@@ -106,7 +106,6 @@ jobs:
             pwd
             ls -al .
             ls -al ./target
-            ls -al ./target/target
       - aws-s3/sync:
           arguments: |
             --exclude "*" \
