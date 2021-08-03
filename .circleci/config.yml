@@ -106,7 +106,7 @@ jobs:
             pwd
             ls -al .
             ls -al ./target
-            la -al ./target/target
+            ls -al ./target/target
       - aws-s3/sync:
           arguments: |
             --exclude "*" \
