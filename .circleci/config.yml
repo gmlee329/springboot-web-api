@@ -47,6 +47,18 @@ jobs:
       # 연동된 git에서 repository를 pull 해오는 단계
       - checkout
 
+      # dependencies를 캐싱 해둠
+      - restore_cache:
+          keys:
+            - spring-web-api-{{ checksum "pom.xml" }}
+
+      - run: mvn dependency:go-offline
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: spring-web-api-{{ checksum "pom.xml" }}
+
       # 실행할 명령의 단위
       # warnings, errors, output 등이 출력될 때 붙는 이름이므로 각 명령어 단계를 잘 구분하도록 지음
       # 애플리케이션 패키징 (target 폴더에 jar파일로 생성)
@@ -84,6 +96,14 @@ jobs:
     steps:
       - attach_workspace:
           at: ./target
+      - run:
+          name: check environments
+          command: |
+            echo "PACKAGE_NAME : ${PACKAGE_NAME}"
+            echo "PACKAGE_VERSION : ${PACKAGE_VERSION}"
+            echo "FROM_REPOSITORY : ${FROM_REPOSITORY}"
+            echo "TO_REPOSITORY : ${TO_REPOSITORY}"
+            ls -al ./target | grep ${PACKAGE_NAME}-${PACKAGE_VERSION}.jar
       - aws-s3/sync:
           arguments: |
             --exclude "*" \
