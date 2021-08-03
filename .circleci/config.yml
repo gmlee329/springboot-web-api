@@ -104,7 +104,7 @@ jobs:
             echo "FROM_REPOSITORY : ${FROM_REPOSITORY}"
             echo "TO_REPOSITORY : ${TO_REPOSITORY}"
             pwd
-            ls -al
+            ls -al ./target
       - aws-s3/sync:
           arguments: |
             --exclude "*" \
