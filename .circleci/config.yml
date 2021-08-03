@@ -51,17 +51,17 @@ jobs:
       - run:
           name: build spring-web-api
           command: |
-          echo "<<<<<<<<<< packaging start >>>>>>>>>>"
-          mvn -B -DskipTests clean package
-          echo "<<<<<<<<<< packaging end >>>>>>>>>>"
+            echo "<<<<<<<<<< packaging start >>>>>>>>>>"
+            mvn -B -DskipTests clean package
+            echo "<<<<<<<<<< packaging end >>>>>>>>>>"
 
       # 패키징된 jar 파일 확인
       - run:
           name: check jar file
           command: |
-          echo "<<<<<<<<<< checking a jar file start >>>>>>>>>>"
-          ls -al ./target | grep ${PACKAGE_NAME}-${PACKAGE_VERSION}.jar
-          echo "<<<<<<<<<< checking a jar file end >>>>>>>>>>"
+            echo "<<<<<<<<<< checking a jar file start >>>>>>>>>>"
+            ls -al ./target | grep ${PACKAGE_NAME}-${PACKAGE_VERSION}.jar
+            echo "<<<<<<<<<< checking a jar file end >>>>>>>>>>"
 
       # 패키징 한 후 jar 파일을 다음 job에서 s3에 업로드 하기 위해 target 폴더 공유
       - persist_to_workspace:
