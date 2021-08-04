@@ -69,15 +69,16 @@ jobs:
             mvn -B -DskipTests clean package
             echo "---------- packaging end ----------"
 
-      # 패키징된 jar 파일 확인
+      # 패키징된 jar 파일 tar.gz으로 압축
       - run:
-          name: check jar file
+          name: zip jar file to tar.gz
           command: |
-            echo "---------- checking a jar file start ----------"
+            echo "---------- compressing start ----------"
+            tar zcvf ./target/${PACKAGE_NAME}-${PACKAGE_VERSION}.jar.tar.gz ./target/${PACKAGE_NAME}-${PACKAGE_VERSION}.jar
             ls -al ./target | grep ${PACKAGE_NAME}-${PACKAGE_VERSION}.jar
-            echo "---------- checking a jar file end ----------"
+            echo "---------- compressing end ----------"
 
-      # 패키징 한 후 jar 파일을 다음 job에서 s3에 업로드 하기 위해 target 폴더 공유
+      # 압축한 tar.gz 파일을 다음 job에서 s3에 업로드 하기 위해 target 폴더 공유
       - persist_to_workspace:
           root: .
           paths:
@@ -96,20 +97,10 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run:
-          name: check environments
-          command: |
-            echo "PACKAGE_NAME : ${PACKAGE_NAME}"
-            echo "PACKAGE_VERSION : ${PACKAGE_VERSION}"
-            echo "FROM_REPOSITORY : ${FROM_REPOSITORY}"
-            echo "TO_REPOSITORY : ${TO_REPOSITORY}"
-            pwd
-            ls -al .
-            ls -al ./target
       - aws-s3/sync:
           arguments: |
             --exclude "*" \
-            --include "${PACKAGE_NAME}-${PACKAGE_VERSION}.jar"
+            --include "${PACKAGE_NAME}-${PACKAGE_VERSION}.jar.tar.gz"
           from: ${FROM_REPOSITORY}
           to: ${TO_REPOSITORY}
 
