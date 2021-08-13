@@ -60,7 +60,7 @@ jobs:
           key: spring-web-api-{{ checksum "pom.xml" }}
 
       # 실행할 명령의 단위
-      # warnings, errors, output 등이 출력될 때 붙는 이름이므로 각 명령어 단계를 잘 구분하도록 지음
+      # warnings, errors, output 등이 출력될 때 붙는 이름이므로 각 명령어 단계를 잘 구분하도록 name 명시
       # 애플리케이션 패키징 (target 폴더에 jar파일로 생성)
       - run:
           name: build spring-web-api
