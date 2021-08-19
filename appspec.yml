@@ -1,0 +1,52 @@
+# CodeDeploy 버전
+version: 0.0
+
+# 명령어를 수행할 os 환경
+os: linux
+
+# s3, github 등 codedeploy에서 지정한 레포지토리로 부터 애플리케이션 파일을 복사해옴
+files:
+    # CodeDeploy에서 전달해 준 파일 중 destination으로 이동시킬 대상
+  - source: /
+    # source로부터 복사한 파일을 받을 인스턴스 내의 경로
+    # s3에 zip으로 올린 경우 자동으로 unzip하여 복사
+    destination: /home/ec2-user/app/
+    # 덮어쓰기 속성
+    overwrite: yes
+
+# CodeDeploy에서 EC2서버로 넘겨준 파일들의 권한 설정
+# 전체 파일을 ec2-user 권한으로 설정
+permissions:
+  - object: /
+    pattern: "**"
+    owner: ec2-user
+    group: ec2-user
+
+# CodeDeploy 배포 단계의 lifecycle별로 실행할 스크립트 지정
+# 실습에서는 실행 전 s3로부터 받아온 파일의 압축을 해제하고,
+# 애플리케이션을 시작하는 부분의 lifecycle만 사용
+# 명시되어 있지 않은 lifecycle의 경우 생략된 채로 진행 됨
+hooks:
+  # 애플리케이션 배포 전 실행 스크립트
+  BeforeInstall:
+    - location: scripts/StopOld.sh
+
+  # 사전 test 등 수행
+#  AfterInstall:
+#    - location:
+#      timeout:
+
+  # 배포될 버전의 애플리케이션 구동
+  ApplicationStart:
+      # 실행 스크립트의 위치
+    - location: scripts/StartNew.sh
+      # 스크립트 실행 60초 timeout 설정
+      timeout: 60
+      # 스크립트를 실행하는 유저 권한 설정
+      runas: ec2-user
+
+  # 애플리케이션 모니터링 등 배포 버전의 동작 확인
+#  ValidateService:
+#    - location:
+#      timeout:
+#      runas:

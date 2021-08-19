@@ -1,6 +1,10 @@
 # 참고 : https://circleci.com/docs/2.0/config-intro/
 version: 2.1
 parameters:
+  deploy-name:
+    description: spring boot application deploy name
+    type: string
+    default: "spring-prod"
   package-name:
     description: spring boot application package name
     type: string
@@ -16,11 +20,25 @@ parameters:
   to-repository:
     description: A local target or s3 destination
     type: string
-    default: "s3://spring-boot-repository/target/"
+    default: "s3://spring-boot-repository/"
+  application-name:
+    description: code-deploy application name
+    type: string
+    default: "spring-application"
+  bundle-bucket:
+    description: code-deploy bundle-bucket
+    type: string
+    default: "spring-boot-repository"
+  deployment-group:
+    description: code-deploy deployment-group
+    type: string
+    default: "spring-deployment-group"
+
 
 # s3 사용을 위한 orbs
 orbs:
   aws-s3: circleci/aws-s3@3.0.0
+  aws-code-deploy: circleci/aws-code-deploy@2.0.0
 
 # CircleCI에서 수행할 job들을 명시
 jobs:
@@ -38,6 +56,7 @@ jobs:
 
     # 컨테이너에서 사용할 시스템 환경 변수
     environment:
+      DEPLOY_NAME: << pipeline.parameters.deploy-name >>
       PACKAGE_NAME: << pipeline.parameters.package-name >>
       PACKAGE_VERSION: << pipeline.parameters.package-version >>
 
@@ -69,13 +88,16 @@ jobs:
             mvn -B -DskipTests clean package
             echo "---------- packaging end ----------"
 
-      # 패키징된 jar 파일 tar.gz으로 압축
+      # 패키징된 jar 파일, scripts, appspec 등 배포에 필요한 파일들 tar.gz으로 압축
       - run:
           name: zip jar file to tar.gz
           command: |
             echo "---------- compressing start ----------"
-            tar zcvf ./target/${PACKAGE_NAME}-${PACKAGE_VERSION}.jar.tar.gz ./target/${PACKAGE_NAME}-${PACKAGE_VERSION}.jar
-            ls -al ./target | grep ${PACKAGE_NAME}-${PACKAGE_VERSION}.jar
+            tar zcvf ./target/${DEPLOY_NAME}.tar.gz \
+            ./target/${PACKAGE_NAME}-${PACKAGE_VERSION}.jar \
+            ./scripts/* \
+            ./appspec.yml
+            ls -al ./target | grep ${PACKAGE_NAME}-${PACKAGE_VERSION}-prod.tar.gz
             echo "---------- compressing end ----------"
 
       # 압축한 tar.gz 파일을 다음 job에서 s3에 업로드 하기 위해 target 폴더 공유
@@ -84,25 +106,34 @@ jobs:
           paths:
             - ./target
 
-  # AWS S3에 jar 파일 upload
-  upload:
+  # AWS S3에 jar 파일 upload 및 codedeploy에 배포
+  deploy:
     docker:
       - image: cimg/python:3.8
     working_directory: ~/springboot-web-api
     environment:
-      PACKAGE_NAME: << pipeline.parameters.package-name >>
-      PACKAGE_VERSION: << pipeline.parameters.package-version >>
+      DEPLOY_NAME: << pipeline.parameters.deploy-name >>
       FROM_REPOSITORY: << pipeline.parameters.from-repository >>
       TO_REPOSITORY: << pipeline.parameters.to-repository >>
+      APPLICATION_NAME: << pipeline.parameters.application-name >>
+      DEPLOYMENT_GROUP: << pipeline.parameters.deployment-group >>
+      BUNDLE_BUCKET: << pipeline.parameters.bundle-bucket >>
     steps:
       - attach_workspace:
           at: .
-      - aws-s3/sync:
-          arguments: |
-            --exclude "*" \
-            --include "${PACKAGE_NAME}-${PACKAGE_VERSION}.jar.tar.gz"
-          from: ${FROM_REPOSITORY}
+      - aws-s3/copy:
+#          arguments: |
+#            --exclude "*" \
+#            --include "${DEPLOY_NAME}.tar.gz"
+          from: ${FROM_REPOSITORY}/${DEPLOY_NAME}.tar.gz
           to: ${TO_REPOSITORY}
+      - aws-code-deploy/deploy-bundle:
+          application-name: ${APPLICATION_NAME}
+          deployment-group: ${DEPLOYMENT_GROUP}
+          deployment-config: CodeDeployDefault.AllAtOnce
+          bundle-bucket: ${BUNDLE_BUCKET}
+          bundle-key: ${DEPLOY_NAME} # 확장자 제거해야 함
+          bundle-type: tgz # default
 
 # workflow를 정의하여 위에서 명시한 job의 순서, 의존성 등을 정해 수행
 workflows:
@@ -114,7 +145,7 @@ workflows:
     # 실행해야하는 위에서 미리 정의해 둔 job을 명시
     jobs:
       - build
-      - upload:
+      - deploy:
 
           # 'build'가 수행되고 난 후에 수행되어야 함
           requires:
