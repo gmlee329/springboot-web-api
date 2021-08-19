@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 
-@RequestMapping("/home/*")
+@RequestMapping("/*")
 @Controller
 public class HomeCtrl {
 
@@ -22,6 +22,14 @@ public class HomeCtrl {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(HomeCtrl.class);
+
+    @ResponseBody
+    @RequestMapping(value = "health", method = RequestMethod.GET)
+    public String healthCheck() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("status", "healthy");
+        return "health";
+    }
 
     @RequestMapping(value = "html", method = RequestMethod.GET)
     public String testViewPage(HttpServletRequest request) {
