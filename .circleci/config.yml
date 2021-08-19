@@ -88,19 +88,19 @@ jobs:
             mvn -B -DskipTests clean package
             echo "---------- packaging end ----------"
 
-      # 패키징된 jar 파일, scripts, appspec 등 배포에 필요한 파일들 tar.gz으로 압축
+      # 패키징된 jar 파일, scripts, appspec 등 배포에 필요한 파일들 tgz으로 압축
       - run:
-          name: zip jar file to tar.gz
+          name: zip jar file to tgz
           command: |
             echo "---------- compressing start ----------"
-            tar zcvf ./target/${DEPLOY_NAME}.tar.gz \
+            tar zcvf ./target/${DEPLOY_NAME}.tgz \
             ./target/${PACKAGE_NAME}-${PACKAGE_VERSION}.jar \
             ./scripts/* \
             ./appspec.yml
-            ls -al ./target | grep ${DEPLOY_NAME}.tar.gz
+            ls -al ./target | grep ${DEPLOY_NAME}.tgz
             echo "---------- compressing end ----------"
 
-      # 압축한 tar.gz 파일을 다음 job에서 s3에 업로드 하기 위해 target 폴더 공유
+      # 압축한 tgz 파일을 다음 job에서 s3에 업로드 하기 위해 target 폴더 공유
       - persist_to_workspace:
           root: .
           paths:
@@ -124,8 +124,8 @@ jobs:
       - aws-s3/copy:
 #          arguments: |
 #            --exclude "*" \
-#            --include "${DEPLOY_NAME}.tar.gz"
-          from: ${FROM_REPOSITORY}/${DEPLOY_NAME}.tar.gz
+#            --include "${DEPLOY_NAME}.tgz"
+          from: ${FROM_REPOSITORY}/${DEPLOY_NAME}.tgz
           to: ${TO_REPOSITORY}
       - aws-code-deploy/deploy-bundle:
           application-name: ${APPLICATION_NAME}
