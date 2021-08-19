@@ -97,7 +97,7 @@ jobs:
             ./target/${PACKAGE_NAME}-${PACKAGE_VERSION}.jar \
             ./scripts/* \
             ./appspec.yml
-            ls -al ./target | grep ${PACKAGE_NAME}-${PACKAGE_VERSION}-prod.tar.gz
+            ls -al ./target | grep ${DEPLOY_NAME}.tar.gz
             echo "---------- compressing end ----------"
 
       # 압축한 tar.gz 파일을 다음 job에서 s3에 업로드 하기 위해 target 폴더 공유
