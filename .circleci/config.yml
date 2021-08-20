@@ -133,7 +133,7 @@ jobs:
           deployment-config: CodeDeployDefault.AllAtOnce
           bundle-bucket: ${BUNDLE_BUCKET}
           bundle-key: ${DEPLOY_NAME} # 확장자 제거해야 함
-          bundle-type: tgz # default
+          bundle-type: tgz
 
 # workflow를 정의하여 위에서 명시한 job의 순서, 의존성 등을 정해 수행
 workflows:

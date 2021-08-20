@@ -31,11 +31,6 @@ hooks:
   BeforeInstall:
     - location: scripts/StopOld.sh
 
-  # 사전 test 등 수행
-#  AfterInstall:
-#    - location:
-#      timeout:
-
   # 배포될 버전의 애플리케이션 구동
   ApplicationStart:
       # 실행 스크립트의 위치
@@ -44,9 +39,3 @@ hooks:
       timeout: 60
       # 스크립트를 실행하는 유저 권한 설정
       runas: ec2-user
-
-  # 애플리케이션 모니터링 등 배포 버전의 동작 확인
-#  ValidateService:
-#    - location:
-#      timeout:
-#      runas:
